@@ -1,0 +1,17 @@
+{
+  "name": "js-lib",
+  "version": "1.0.0",
+  "main": "jslib-min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "www.andreberlemont.com",
+  "license": "ISC",
+  "devDependencies": {
+    "grunt": "^0.4.5"
+  },
+  "dependencies": {
+    "grunt": "^0.4.5"
+  },
+  "description": ""
+}
