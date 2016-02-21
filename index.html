@@ -5,7 +5,7 @@
     
     <meta charset="UTF-8" />
 
-    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
 
     <script type="text/javascript" src="js/Base.js"></script>
     <script type="text/javascript" src="js/Display.js"></script>
@@ -20,15 +20,47 @@
 
   </head>
   <body>
+
+    <div id="debugC" style="position:absolute;background-color:#d22;"></div>
+    <div id="debugB" style="position:absolute;background-color:#2dd;"></div>
+    <div id="debug" style="position:absolute;background-color:#2d2;opacity: 0.5;"></div>
+    
+
     <script>
+      
       $(function(){
         console.log("ready");
-        Scroll.setup(scrollBinded);
+        //test_Scroll();
+
+        test_Resolution();
       });
+
+      function test_Resolution(){
+        $("body").css({overflow:"hidden"});
+        
+        setInterval(function(){
+          var dim = Resolution.getViewportDimensions();
+          $("#debugC").css({width:dim.x+"px", height:dim.y+"px"});
+          
+          var ref = [1280,720];
+          $("#debugB").css({width:ref[0]+"px", height:ref[1]+"px"});
+          
+          dim = Resolution.getScreenDimensionsByRatio(ref[0],ref[1]);
+          $("#debug").css({width:dim.x+"px", height:dim.y+"px"});
+
+        },300);
+
+      }
+
+
+      function test_Scroll(){
+        Scroll.setup(scrollBinded);
+      }
 
       function scrollBinded(dir){
         console.log(dir);
       }
     </script>
+
   </body>
 </html>
