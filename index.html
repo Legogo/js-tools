@@ -32,8 +32,17 @@
         console.log("ready");
         //test_Scroll();
 
-        test_Resolution();
+        //test_Resolution();
+
+        test_resize();
       });
+
+      function test_resize(){
+        Display.onResize(function(){
+          var dim = Resolution.getViewportDimensions();
+          $("#debug").css({width:dim.x+"px", height:dim.y+"px"});
+        }, 10);
+      }
 
       function test_Resolution(){
         $("body").css({overflow:"hidden"});

@@ -45,6 +45,42 @@ Display.fixPNGs = function(){
   }
 }
 
+
+Display.onResize = function(callback, intervalTime){
+  
+  var prevSize = {x:0,y:0};
+  var modified = false;
+  var modifiedFrameTimer = 0; // count time before sending callback, so that it doesnt spam when changing size of the browser
+  var itv = -1;
+
+  window.onresize = function(event){
+    //already resizing
+    if(itv > -1) return;
+    
+    itv = setInterval(function(){
+
+      var size = Resolution.getInnerViewportSize();
+
+      //on capte quand ça commence à resize
+      if(prevSize.x != size.x || prevSize.y != size.y){
+        prevSize = size;
+        modifiedFrameTimer = 3;
+      }
+      
+      if(modifiedFrameTimer > 0){
+        modifiedFrameTimer--;
+        if(modifiedFrameTimer <= 0){
+          clearInterval(itv);
+          itv = -1;
+          callback();
+        }
+      }
+      
+    }, intervalTime);
+  };
+
+}
+
 Loading = function(){
   this.idx = 0;
 }
@@ -137,14 +173,32 @@ Resolution.getScreenResolution = function(){ return screen.width+" x "+screen.he
 Resolution.getViewportDimensions = function(){ return this.getInnerViewportSize(); }
 Resolution.getViewportDimensionsCinema = function(){ return resolution_getViewportClampedByRatio(9/16); }
 Resolution.getViewportClampedByRatio = function(ratio){
-  var dim = resolution_getViewportDimensions();
+  var dim = Resolution.getViewportDimensions();
   dim.y = dim.x * ratio;
   return dim;
 }
 
+Resolution.getScreenDimensionsByRatio = function(refWidth,refHeight){
+  var dim = Resolution.getViewportDimensions();
+  var ratio = (refWidth / refHeight);
+  var dimRatio = dim.x / dim.y;
+
+  var solved = {x:0,y:0};
+  
+  if(ratio > dimRatio){
+    solved.x = dim.x;
+    solved.y = dim.x / ratio;
+  }else{
+    solved.y = dim.y;
+    solved.x = dim.y * ratio;
+  }
+
+  return solved;
+}
+
   /* output ideal {w,h} based on device */
 Resolution.getClampedDimensions = function(){
-  var dim = resolution_getViewportDimensions();
+  var dim = Resolution.getViewportDimensions();
 
   var ref = (dim.x >= dim.y) ? SCREEN_REF_DIMENSIONS.hv : SCREEN_REF_DIMENSIONS.vh;
   var compareHorizontal = (dim.x >= dim.y);
@@ -375,41 +429,6 @@ System = function(){}
 System.copyToClipboard = function(txt) {
   Copied = txt.createTextRange();
   Copied.execCommand("Copy");
-}
-
-System.onResize = function(intervalTime, callback){
-
-  var prevSize = {x:0,y:0};
-  var modified = false;
-  var modifiedFrameTimer = 0;
-  var itv = -1;
-
-  window.onresize = function(event){
-    //already resizing
-    if(itv > -1) return;
-    
-    itv = setInterval(function(){
-
-      var size = getInnerViewportSize();
-
-      //on capte quand ça commence à resize
-      if(prevSize.x != size.x || prevSize.y != size.y){
-        prevSize = size;
-        modifiedFrameTimer = 5;
-      }
-      
-      if(modifiedFrameTimer > 0){
-        modifiedFrameTimer--;
-        if(modifiedFrameTimer <= 0){
-          clearInterval(itv);
-          itv = -1;
-          callback();
-        }
-      }
-      
-    }, intervalTime);
-  };
-
 }
 
 Web = function(){}
