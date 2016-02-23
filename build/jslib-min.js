@@ -144,6 +144,10 @@ MathTools.roundTo = function(val, decimal){val = Math.floor(val * decimal);val =
 MathTools.lerp = function(a,b,amount){ return a + amount * (b-a); }
 MathTools.inverselerp = function(a,b,amount){ return (amount - a) / (b-a); }
 
+
+MathTools.isNumeric = function(){
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
 Mobile = function(){}
 Mobile.isMobile = function(){ return ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ); }
 
