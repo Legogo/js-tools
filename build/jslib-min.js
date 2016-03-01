@@ -81,6 +81,24 @@ Display.onResize = function(callback, intervalTime){
 
 }
 
+Input = function(){}
+
+
+Input.assignKey = function(charCode, callback){
+
+  //http://www.javascriptkit.com/jsref/eventkeyboardmouse.shtml
+  document.onkeypress=function(e){
+    //console.log(e);console.log(charCode);
+    var e=window.event || e;
+    if(e.charCode == charCode){
+      if(callback != undefined) callback();
+    }
+
+    //alert("CharCode value: "+e.charCode);
+    //alert("Character: "+String.fromCharCode(e.charCode));
+  }
+
+}
 Loading = function(){
   this.idx = 0;
 }
@@ -143,7 +161,6 @@ MathTools.sign = function(x){if(x < 0) return -1;else if(x > 0)  return 1;return
 MathTools.roundTo = function(val, decimal){val = Math.floor(val * decimal);val = val / decimal;return val;}
 MathTools.lerp = function(a,b,amount){ return a + amount * (b-a); }
 MathTools.inverselerp = function(a,b,amount){ return (amount - a) / (b-a); }
-
 
 MathTools.isNumeric = function(){
   return !isNaN(parseFloat(n)) && isFinite(n);
@@ -435,7 +452,14 @@ System.copyToClipboard = function(txt) {
   Copied.execCommand("Copy");
 }
 
+System.isArray = function(obj){
+  return(Object.prototype.toString.call( obj ) === '[object Array]');
+}
 Web = function(){}
+
+Web.getUrl = function(){
+  return document.URL.toLowerCase();
+}
 
 Web.getUrlLanguage = function(deflt){
   var url = document.URL.toLowerCase();

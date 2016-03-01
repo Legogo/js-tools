@@ -17,6 +17,7 @@
     <script type="text/javascript" src="js/Scroll.js"></script>
     <script type="text/javascript" src="js/System.js"></script>
     <script type="text/javascript" src="js/Web.js"></script>
+    <script type="text/javascript" src="js/Input.js"></script>
 
   </head>
   <body>
@@ -34,8 +35,23 @@
 
         //test_Resolution();
 
-        test_resize();
+        //test_resize();
+
+        //test_input();
+
+        test_web();
       });
+
+      function test_web(){
+        console.log(Web.getUrl());
+        console.log(Web.getUrlParam());
+      }
+
+      function test_input(){
+        Input.assignKey(32, function(){
+          alert("lol");
+        });
+      }
 
       function test_resize(){
         Display.onResize(function(){
