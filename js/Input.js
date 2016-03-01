@@ -16,3 +16,10 @@ Input.assignKey = function(charCode, callback){
   }
 
 }
+
+Input.click = function(elmt, callback){
+  elmt.bind("click touchstart", callback);
+}
+Input.unClick = function(elmt){
+  elmt.unbind("click touchstart");
+}

@@ -6,33 +6,85 @@ Scroll = function(){
   this.touchPrevious = {x:0,y:0};
   this.touchDelta = {x:0,y:0};
   this.touchIntervalId = -1;
+  
+  this.touchCooldown = 0;
+  this.touchCooldownTarget = 3; // for mobile
+
+  this.touchMobile = false;
 }
 
 var SCROLL = new Scroll();
 
 Scroll.setup = function(callback){
   SCROLL.onScrollCallback = callback;
+  SCROLL.touchMobile = Mobile.isMobile();
+
   if(Mobile.isMobile()) Scroll.bind_scroll_mobile();
   else Scroll.bind_scroll();
+}
+
+Scroll.allowToScroll = function(obj){
+  var identifier = obj.toString();
+  
+  //Debug.append("touch ? "+identifier, 20);
+
+  var noScroll = false;
+
+  if(identifier.indexOf("HtmlElement") > -1){
+    return false;
+  }
+
+  if(!noScroll){
+    if($(obj).hasClass("noScroll")){
+      return false;
+    }
+  }
+
+  if(noScroll){
+    return false;
+  }
+
+  //Debug.append(obj.id+" allowed to scroll !", 20);  
+  return true;
+}
+
+Scroll.preventScrollingEvent = function(obj){
+  if(!Scroll.allowToScroll(obj)) return true;
+  if($(obj).hasClass("scrollPrevent")){
+    return true;
+  }
+  return false;
 }
 
 Scroll.bind_scroll_mobile = function(){
 
   //disable touch capacity on mobile
   document.ontouchstart = function(e){
-    e.preventDefault()
-    //logDebug("TOUCH");
+    Debug.append(e.target,20);
+
+    if(!Scroll.allowToScroll(e.target)) return;
+    if(Scroll.preventScrollingEvent(e.target)){
+      e.preventDefault();
+    }
+
     Scroll.touchStart = Scroll.extractEventPosition(e);
   }
   document.ontouchend = function(e){
-    e.preventDefault();
+    if(!Scroll.allowToScroll(e.target)) return;
+    if(Scroll.preventScrollingEvent(e.target)){
+      e.preventDefault();
+    }
+
     //logDebug("RELEASE");
     Scroll.touchPrevious.x = Scroll.touchPrevious.y = 0;
   }
 
   /* pagex et pagey sont exprimé dans la position du body, pas de l'écran */
   document.ontouchmove = function(e){
-    e.preventDefault();
+    if(!Scroll.allowToScroll(e.target)) return;
+    if(Scroll.preventScrollingEvent(e.target)){
+      e.preventDefault();
+    }
 
     var pos = Scroll.extractEventPosition(e);
 
@@ -48,7 +100,24 @@ Scroll.bind_scroll_mobile = function(){
     SCROLL.touchPrevious.x = pos.x;
     SCROLL.touchPrevious.y = pos.y;
 
+    //kill big movement
+    //quand on replace son doigt autre part sur l'écran ça fait un grand gap
+    if(SCROLL.touchMobile){
+      if(Math.abs(SCROLL.touchDelta.y) > 50){
+        SCROLL.touchDelta.y = 0;
+        //Debug.append("killing big move", 20);
+      }
+    }
+
+    if(SCROLL.touchCooldown > 0){
+      SCROLL.touchCooldown--;
+      return;
+    }
+
     if(SCROLL.touchDelta.y != 0 && SCROLL.onScrollCallback != undefined){
+      
+      if(SCROLL.touchMobile) SCROLL.touchCooldown = SCROLL.touchCooldownTarget;
+
       SCROLL.onScrollCallback(SCROLL.touchDelta.y);
     }
   }

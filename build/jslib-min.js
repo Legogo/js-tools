@@ -31,18 +31,48 @@ function Debug(){}
 
 var DEBUG;
 
-Debug.update = function(info){
+Debug.checkForDiv = function(){
   if(DEBUG == undefined){
     //DEBUG = document.getElementById("debug");
     DEBUG = $("#debug");
     if(DEBUG == undefined){
-      $("body").append("<div id='debug'></div>");
+      $("body").append("<div id='debug' style='z-index:10000;width:300px;'></div>");
     }
     
     DEBUG = $("#debug");
   }
+}
+
+Debug.update = function(str){
+  Debug.checkForDiv();
+  DEBUG.html(str);
+}
+
+
+Debug.append = function(str, limit){
+  if(limit == undefined) limit = 0;
+
+  Debug.checkForDiv();
   
-  $("#debug").html(info);
+  var ct = DEBUG.html();
+  ct += "<br>"+str;
+
+  if(limit > 0){
+    var lines = ct.split("<br>");
+
+    limit = Math.min(limit, lines.length);
+    lines = lines.slice(lines.length-limit, lines.length);
+
+    ct = "";
+    var count = 0;
+    for(var i = 0; i < lines.length; i++){
+      if(lines[i].length > 0){
+        ct += "<br>"+lines[i];
+      }
+    }
+  }
+
+  DEBUG.html(ct);
 }
 
 Debug.setup = function(){
@@ -138,6 +168,13 @@ Input.assignKey = function(charCode, callback){
   }
 
 }
+
+Input.click = function(elmt, callback){
+  elmt.bind("click touchstart", callback);
+}
+Input.unClick = function(elmt){
+  elmt.unbind("click touchstart");
+}
 Loading = function(){
   this.idx = 0;
 }
@@ -207,7 +244,17 @@ MathTools.isNumeric = function(){
 Mobile = function(){}
 Mobile.isMobile = function(){ return ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ); }
 
+//http://stackoverflow.com/questions/3845445/how-to-get-the-scroll-bar-with-css-overflow-on-ios
+Mobile.isTouchDevice = function(){
+  try{
+    document.createEvent("TouchEvent");
+    return true;
+  }catch(e){
+    return false;
+  }
 
+  return false;
+}
 
 Resolution = function(){
   this.SCREEN_REF_DIMENSIONS = {
@@ -344,33 +391,85 @@ Scroll = function(){
   this.touchPrevious = {x:0,y:0};
   this.touchDelta = {x:0,y:0};
   this.touchIntervalId = -1;
+  
+  this.touchCooldown = 0;
+  this.touchCooldownTarget = 3; // for mobile
+
+  this.touchMobile = false;
 }
 
 var SCROLL = new Scroll();
 
 Scroll.setup = function(callback){
   SCROLL.onScrollCallback = callback;
+  SCROLL.touchMobile = Mobile.isMobile();
+
   if(Mobile.isMobile()) Scroll.bind_scroll_mobile();
   else Scroll.bind_scroll();
+}
+
+Scroll.allowToScroll = function(obj){
+  var identifier = obj.toString();
+  
+  //Debug.append("touch ? "+identifier, 20);
+
+  var noScroll = false;
+
+  if(identifier.indexOf("HtmlElement") > -1){
+    return false;
+  }
+
+  if(!noScroll){
+    if($(obj).hasClass("noScroll")){
+      return false;
+    }
+  }
+
+  if(noScroll){
+    return false;
+  }
+
+  //Debug.append(obj.id+" allowed to scroll !", 20);  
+  return true;
+}
+
+Scroll.preventScrollingEvent = function(obj){
+  if(!Scroll.allowToScroll(obj)) return true;
+  if($(obj).hasClass("scrollPrevent")){
+    return true;
+  }
+  return false;
 }
 
 Scroll.bind_scroll_mobile = function(){
 
   //disable touch capacity on mobile
   document.ontouchstart = function(e){
-    e.preventDefault()
-    //logDebug("TOUCH");
+    Debug.append(e.target,20);
+
+    if(!Scroll.allowToScroll(e.target)) return;
+    if(Scroll.preventScrollingEvent(e.target)){
+      e.preventDefault();
+    }
+
     Scroll.touchStart = Scroll.extractEventPosition(e);
   }
   document.ontouchend = function(e){
-    e.preventDefault();
+    if(!Scroll.allowToScroll(e.target)) return;
+    if(Scroll.preventScrollingEvent(e.target)){
+      e.preventDefault();
+    }
+
     //logDebug("RELEASE");
     Scroll.touchPrevious.x = Scroll.touchPrevious.y = 0;
   }
 
   /* pagex et pagey sont exprimé dans la position du body, pas de l'écran */
   document.ontouchmove = function(e){
-    e.preventDefault();
+    if(!Scroll.allowToScroll(e.target)) return;
+    if(Scroll.preventScrollingEvent(e.target)){
+      e.preventDefault();
+    }
 
     var pos = Scroll.extractEventPosition(e);
 
@@ -386,7 +485,24 @@ Scroll.bind_scroll_mobile = function(){
     SCROLL.touchPrevious.x = pos.x;
     SCROLL.touchPrevious.y = pos.y;
 
+    //kill big movement
+    //quand on replace son doigt autre part sur l'écran ça fait un grand gap
+    if(SCROLL.touchMobile){
+      if(Math.abs(SCROLL.touchDelta.y) > 50){
+        SCROLL.touchDelta.y = 0;
+        //Debug.append("killing big move", 20);
+      }
+    }
+
+    if(SCROLL.touchCooldown > 0){
+      SCROLL.touchCooldown--;
+      return;
+    }
+
     if(SCROLL.touchDelta.y != 0 && SCROLL.onScrollCallback != undefined){
+      
+      if(SCROLL.touchMobile) SCROLL.touchCooldown = SCROLL.touchCooldownTarget;
+
       SCROLL.onScrollCallback(SCROLL.touchDelta.y);
     }
   }
