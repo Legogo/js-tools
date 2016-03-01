@@ -468,3 +468,10 @@ Web.getUrlLanguage = function(deflt){
   if(document.URL.indexOf("/de") >= 0 || document.URL.indexOf("?de") >= 0) return "de";
   return deflt;
 }
+
+Web.getUrlParam = function(){
+  var url = Web.getUrl();
+  var split = url.split("/");
+  split = split[split.length-1].split("?");
+  return split[split.length-1];
+}
