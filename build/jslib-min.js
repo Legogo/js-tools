@@ -53,7 +53,7 @@ function Debug(){
   this.html = function(str){
     this.dContent.html(str);
   }
-  
+
   this.appendContent = function(str){
     //console.log(str);
     var ct = this.dContent.html();
@@ -67,9 +67,9 @@ function Debug(){
   this.getRefs = function(){
     if(this.div == undefined){
 
-      var div = "<div id='debug' style='z-index:10000;position:fixed;top:0px;left:0px;opacity:0.9;'>";
-      div += "<div id='debug-logs' style='border-style:solid;border-width:1px;'></div>";
-      div += "<div id='debug-content' style='border-style:solid;border-width:1px;'></div>";
+      var div = "<div id='debug' style='background-color:#333;color:#ddd;z-index:10000;position:fixed;top:0px;left:0px;opacity:0.9;'>";
+      div += "<div id='debug-logs'></div>";
+      div += "<div id='debug-content'></div>";
       div += "</div>";
       $("body").append(div);
       
@@ -411,7 +411,7 @@ Scroll = function(){
     return function(e){
       if(handle.scrollCount > 0){
         //console.log(handle.scrollCount);
-        Debug.append("count ? "+handle.scrollCount);
+        //Debug.append("count ? "+handle.scrollCount);
         SCROLL.scrollCallback(handle.solvedDelta);
       }
       handle.scrollCount = 0;
@@ -584,7 +584,7 @@ Scroll.onScrollStep = function(delta){
   //on mac touchpad there is inertia in movement that gives a delta decreasing toward 0
   //under 10 it's almost done
   //a big movement is around [50,200]
-  if(delta < 10) return;
+  if(Math.abs(delta) < 10) return;
 
   SCROLL.scrollCount++;
   SCROLL.solvedDelta = delta;

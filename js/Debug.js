@@ -24,7 +24,7 @@ function Debug(){
   this.html = function(str){
     this.dContent.html(str);
   }
-  
+
   this.appendContent = function(str){
     //console.log(str);
     var ct = this.dContent.html();
@@ -38,9 +38,9 @@ function Debug(){
   this.getRefs = function(){
     if(this.div == undefined){
 
-      var div = "<div id='debug' style='z-index:10000;position:fixed;top:0px;left:0px;opacity:0.9;'>";
-      div += "<div id='debug-logs' style='border-style:solid;border-width:1px;'></div>";
-      div += "<div id='debug-content' style='border-style:solid;border-width:1px;'></div>";
+      var div = "<div id='debug' style='background-color:#333;color:#ddd;z-index:10000;position:fixed;top:0px;left:0px;opacity:0.9;'>";
+      div += "<div id='debug-logs'></div>";
+      div += "<div id='debug-content'></div>";
       div += "</div>";
       $("body").append(div);
       
