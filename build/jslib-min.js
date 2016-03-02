@@ -670,9 +670,10 @@ Web.getUrlLanguage = function(deflt){
   return deflt;
 }
 
-Web.getUrlParam = function(){
+Web.getUrlParam = function(splitChar){
+  if(splitChar == undefined) splitChar = '?';
   var url = Web.getUrl();
   var split = url.split("/");
-  split = split[split.length-1].split("?");
+  split = split[split.length-1].split(splitChar);
   return split[split.length-1];
 }
