@@ -1,69 +1,88 @@
-function Debug(){}
-
 var DEBUG;
 
-Debug.checkForDiv = function(){
-  if(DEBUG == undefined){
-    //DEBUG = document.getElementById("debug");
-    DEBUG = $("#debug");
-    if(DEBUG == undefined){
-      $("body").append("<div id='debug' style='z-index:10000;width:300px;'></div>");
-    }
+function Debug(){
+  this.logs = [];
+  
+  this.div;
+  this.dContent;
+  this.dLogs;
+
+  this.updateLogs = function(){
+    this.dLogs.html("");
     
-    DEBUG = $("#debug");
+    var start = Math.max(0, this.logs.length-10);
+
+    var ct = "";
+    for(var i = start; i < this.logs.length; i++){
+      if(i == start) ct += this.logs[i];
+      else ct += "<br>"+this.logs[i];
+    }
+
+    this.dLogs.html(ct);
   }
+
+  this.html = function(str){
+    this.dContent.html(str);
+  }
+  
+  this.appendContent = function(str){
+    //console.log(str);
+    var ct = this.dContent.html();
+    
+    //au debut
+    ct = str+"<br>"+ct;
+
+    this.dContent.html(ct);
+  }
+
+  this.getRefs = function(){
+    if(this.div == undefined){
+
+      var div = "<div id='debug' style='z-index:10000;position:fixed;top:0px;left:0px;opacity:0.9;'>";
+      div += "<div id='debug-logs' style='border-style:solid;border-width:1px;'></div>";
+      div += "<div id='debug-content' style='border-style:solid;border-width:1px;'></div>";
+      div += "</div>";
+      $("body").append(div);
+      
+      this.div = $("#debug");
+      this.dContent = $("#debug-content");
+      this.dLogs = $("#debug-logs");
+    }
+  }
+
+  this.getRefs();
 }
 
 Debug.update = function(str){
-  Debug.checkForDiv();
   DEBUG.html(str);
 }
 
+Debug.append = function(str){
+  //console.log("append "+str);
+  DEBUG.appendContent(str);
+}
 
-Debug.append = function(str, limit){
-  if(limit == undefined) limit = 0;
-
-  Debug.checkForDiv();
-  
-  var ct = DEBUG.html();
-  ct += "<br>"+str;
-
-  if(limit > 0){
-    var lines = ct.split("<br>");
-
-    limit = Math.min(limit, lines.length);
-    lines = lines.slice(lines.length-limit, lines.length);
-
-    ct = "";
-    var count = 0;
-    for(var i = 0; i < lines.length; i++){
-      if(lines[i].length > 0){
-        ct += "<br>"+lines[i];
-      }
-    }
-  }
-
-  DEBUG.html(ct);
+Debug.log = function(str){
+  //console.log(DEBUG);
+  DEBUG.logs.push(str);
+  DEBUG.updateLogs();
 }
 
 Debug.setup = function(){
+  //console.log("{Debug} setup()");
+  DEBUG = new Debug();
+
+  //console.log("localhost ? "+System.isLocalhost());
+  Debug.setVisibility(System.isLocalhost());
   
-  Debug.setVisibility(Debug.isLocalhost());
-  
+  //console.log(DEBUG.div.is(":visible"));console.log(DEBUG.div);
+
   Input.assignKey(32, function(){
-    $("#debug").toggle();
+    DEBUG.div.toggle();
   });
 }
 
 Debug.setVisibility = function(flag){
-  if(flag) $("#debug").show();
-  else $("#debug").hide();
-}
-
-Debug.isLocalhost = function(){
-  var url = Web.getUrl();
-  if(url.indexOf("localhost") > -1) return true;
-  if(url.indexOf("file:///") > -1) return true;
-  if(url.indexOf("Users/") > -1) return true;
-  return false;
+  if(flag) DEBUG.div.show();
+  else DEBUG.div.hide();
 }

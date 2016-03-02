@@ -1,32 +1,52 @@
 Scroll = function(){
   this.scrollDiv = "#scroll";
-  this.onScrollCallback = null;
+  this.scrollCallback = null;
   this.touchStart = {x:0,y:0};
   this.touchSolvingDir = false;
   this.touchPrevious = {x:0,y:0};
   this.touchDelta = {x:0,y:0};
-  this.touchIntervalId = -1;
-  
-  this.touchCooldown = 0;
-  this.touchCooldownTarget = 3; // for mobile
+
+  //permet de capter la vitesse de scroll
+  this.scrollIntervalId = -1;
+  this.scrollCount = 0;
 
   this.touchMobile = false;
+
+  this.solvedDelta = 0;
+
+  this.scrollIntervalUpate = function(handle){
+    return function(e){
+      if(handle.scrollCount > 0){
+        //console.log(handle.scrollCount);
+        Debug.append("count ? "+handle.scrollCount);
+        SCROLL.scrollCallback(handle.solvedDelta);
+      }
+      handle.scrollCount = 0;
+    }
+  }
+
+  this.scrollIntervalId = setInterval(this.scrollIntervalUpate(this), 50);
 }
 
 var SCROLL = new Scroll();
 
 Scroll.setup = function(callback){
-  SCROLL.onScrollCallback = callback;
-  SCROLL.touchMobile = Mobile.isMobile();
+  SCROLL.scrollCallback = callback;
+  SCROLL.touchMobile = System.isMobile();
 
-  if(Mobile.isMobile()) Scroll.bind_scroll_mobile();
-  else Scroll.bind_scroll();
+  //if(SCROLL.touchMobile) Scroll.bind_scroll_mobile(); else Scroll.bind_scroll();
+  
+  Scroll.bind_scroll_mobile();
+  Scroll.bind_scroll();
+
 }
 
 Scroll.allowToScroll = function(obj){
   var identifier = obj.toString();
   
-  //Debug.append("touch ? "+identifier, 20);
+  //console.log(obj);console.log(obj.nodeType);
+
+  //Debug.append("allowToScroll :: touch ? "+obj.nodeType);
 
   var noScroll = false;
 
@@ -44,7 +64,6 @@ Scroll.allowToScroll = function(obj){
     return false;
   }
 
-  //Debug.append(obj.id+" allowed to scroll !", 20);  
   return true;
 }
 
@@ -60,19 +79,19 @@ Scroll.bind_scroll_mobile = function(){
 
   //disable touch capacity on mobile
   document.ontouchstart = function(e){
-    Debug.append(e.target,20);
-
+    //Debug.append("touch start");
     if(!Scroll.allowToScroll(e.target)) return;
     if(Scroll.preventScrollingEvent(e.target)){
-      e.preventDefault();
+      Scroll.preventDefault(e);
     }
 
     Scroll.touchStart = Scroll.extractEventPosition(e);
   }
   document.ontouchend = function(e){
+    //Debug.append("touch end");
     if(!Scroll.allowToScroll(e.target)) return;
     if(Scroll.preventScrollingEvent(e.target)){
-      e.preventDefault();
+      Scroll.preventDefault(e);
     }
 
     //logDebug("RELEASE");
@@ -81,9 +100,10 @@ Scroll.bind_scroll_mobile = function(){
 
   /* pagex et pagey sont exprimé dans la position du body, pas de l'écran */
   document.ontouchmove = function(e){
+    //Debug.append("touch move");
     if(!Scroll.allowToScroll(e.target)) return;
     if(Scroll.preventScrollingEvent(e.target)){
-      e.preventDefault();
+      Scroll.preventDefault(e);
     }
 
     var pos = Scroll.extractEventPosition(e);
@@ -100,26 +120,12 @@ Scroll.bind_scroll_mobile = function(){
     SCROLL.touchPrevious.x = pos.x;
     SCROLL.touchPrevious.y = pos.y;
 
-    //kill big movement
-    //quand on replace son doigt autre part sur l'écran ça fait un grand gap
-    if(SCROLL.touchMobile){
-      if(Math.abs(SCROLL.touchDelta.y) > 50){
-        SCROLL.touchDelta.y = 0;
-        //Debug.append("killing big move", 20);
-      }
+    var delta = Math.abs(SCROLL.touchDelta.y);
+
+    if(delta != 0 && delta < 50){
+      Scroll.onScrollStep(SCROLL.touchDelta.y);
     }
 
-    if(SCROLL.touchCooldown > 0){
-      SCROLL.touchCooldown--;
-      return;
-    }
-
-    if(SCROLL.touchDelta.y != 0 && SCROLL.onScrollCallback != undefined){
-      
-      if(SCROLL.touchMobile) SCROLL.touchCooldown = SCROLL.touchCooldownTarget;
-
-      SCROLL.onScrollCallback(SCROLL.touchDelta.y);
-    }
   }
 
 }
@@ -127,72 +133,77 @@ Scroll.bind_scroll_mobile = function(){
 Scroll.extractEventPosition = function(event){ return {x:event.targetTouches[0].pageX,y:event.targetTouches[0].pageY}; }
 
 Scroll.bind_scroll = function(){
-  var mousewheelevt=(/Firefox/i.test(navigator.userAgent))? "DOMMouseScroll" : "mousewheel" //FF doesn't recognize mousewheel as of FF3.x
+  
+  var doc = document.documentElement;
+
+  var eventName = (/Firefox/i.test(navigator.userAgent))? "DOMMouseScroll" : "mousewheel" //FF doesn't recognize mousewheel as of FF3.x
   if (document.attachEvent) {
     //if IE (and Opera depending on user setting)
-    document.attachEvent("on"+mousewheelevt, Scroll.onWheel)
+    document.attachEvent("on"+eventName, Scroll.onWheel)
   }else if (document.addEventListener){
     //WC3 browsers
-    document.addEventListener(mousewheelevt, Scroll.onWheel, false)
+    document.addEventListener(eventName, Scroll.onWheel, false)
   }
-}
-  
-Scroll.bind_scroll_usingDiv = function(){
-  //log("bing to "+scrollDiv);
-  $(this.scrollDiv).bind("scroll", function(e){
-    $t = $(e.target);
-    event_scroll();
-  });
+
+  /*
+  eventName = "mousedown";
+  if(document.attachEvent){
+    document.attachEvent("on"+eventName, Scroll.onMouseDown);
+  }else if(document.addEventListener){
+    document.addEventListener(eventName, Scroll.onMouseDown, false);
+  }
+
+  eventName = "mouseup";
+  if(document.attachEvent){
+    document.attachEvent("on"+eventName, Scroll.onMouseUp);
+  }else if(document.addEventListener){
+    document.addEventListener(eventName, Scroll.onMouseUp, false);
+  }
+  */
 }
 
+Scroll.onMouseUp = function(e){
+  console.log("mouse up !");
+}
+Scroll.onMouseDown = function(e){
+  console.log("mouse down");
+}
+
+/* called by wheel listener (not mobile) */
 Scroll.onWheel = function(e){
     //console.log("onWheel");
   var evt=window.event || e //equalize event object
+
+  if(!Scroll.allowToScroll(evt.target)) return;
+  if(Scroll.preventScrollingEvent(evt.target)){
+    Scroll.preventDefault(evt);
+  }
+
   var delta=evt.detail? evt.detail*(-120) : evt.wheelDelta //check for detail first so Opera uses that instead of wheelDelta
   //document.getElementById("wheelvalue").innerHTML=delta //delta returns +120 when wheel is scrolled up, -120 when down
-  SCROLL.onScrollCallback(delta);
+
+  Scroll.onScrollStep(delta);
 }
 
-Scroll.frameToScroll = function(frame){
-  var perc = frame;
-  var elmt = $(scrollDiv);
-  var total = elmt.get(0).scrollHeight - Scroll.getScreenHeight();
-  return Math.floor(perc * total);
-}
+/* called both by mobile and desktop */
+Scroll.onScrollStep = function(delta){
+  
+  //on mac touchpad there is inertia in movement that gives a delta decreasing toward 0
+  //under 10 it's almost done
+  //a big movement is around [50,200]
+  if(delta < 10) return;
 
-  /* retourne une valeur entre [0,1] */
-Scroll.event_scroll = function(){
-  var progress = getScrollCurrentFrame();
-  progress = roundTo(progress, 100);
-  SCROLL.onScrollCallback(progress);
+  SCROLL.scrollCount++;
+  SCROLL.solvedDelta = delta;
+  
+  //if(SCROLL.scrollCount > 3) return;
+  //SCROLL.scrollCallback(delta);
 }
-
-  /* output en px de haut */
-Scroll.getScrollCurrent = function(){
-  var elmt = $(scrollDiv);
-  var s = elmt.scrollTop();
-  return s;
-}
-
-Scroll.getScrollCurrentFrame = function(){
-  var elmt = $(scrollDiv);
-  var total = elmt.get(0).scrollHeight - getScreenHeight();
-  return getScrollCurrent() / total; // [0,1]
-}
-
-Scroll.getScreenHeight = function(){ return Resolution.getViewportDimensions().y; }
 
 Scroll.preventDefault = function(e) {
   e = e || window.event;
   if (e.preventDefault) e.preventDefault();
   e.returnValue = false;  
-}
-
-Scroll.preventDefaultForScrollKeys = function(e) {
-  if (keys[e.keyCode]) {
-    preventDefault(e);
-    return false;
-  }
 }
 
 Scroll.disableScroll = function() {
@@ -211,5 +222,3 @@ Scroll.enableScroll = function() {
   window.ontouchmove = null;
   document.onkeydown = null;
 }
-
-

@@ -41,19 +41,30 @@
         background-color:#2d2;
       }
 
+      #progress{
+        z-index:1000;
+        position:fixed;
+        top:10px;
+        left:500px;
+        background-color: #111;
+        width:200px;
+        height:20px;
+      }
+      #progress-content{
+        background-color: #ccc;
+        height:20px;
+      }
+
     </style>
   </head>
   <body>
-
-    <div id="debugC" style="position:absolute;background-color:#d22;"></div>
-    <div id="debugB" style="position:absolute;background-color:#2dd;"></div>
-    <div id="debug" style="position:absolute;background-color:#2d2;opacity: 0.5;"></div>
-    
 
     <script>
       
       $(function(){
         console.log("ready");
+
+        Debug.setup();
         test_Scroll();
 
         //test_Resolution();
@@ -101,17 +112,30 @@
       }
 
       function test_Scroll(){
-        Debug.update("Mobile ? "+Mobile.isMobile());
+        Debug.log("Mobile ? "+System.isMobile());
         Scroll.setup(scrollBinded);
       }
 
+      var progress = 0;
+
       function scrollBinded(dir){
-        console.log(dir);
-        Debug.append(dir,15);
+        //console.log(dir);
+        Debug.append(dir);
+
+        //var w = $("#progress-content").width();
+        progress += 0.05 * MathTools.sign(dir);
+        //console.log(progress);
+        progress = Math.min(progress, 1);
+        progress = Math.max(progress, 0);
+
+        $("#progress-content").width($("#progress").width() * progress);
       }
+
     </script>
     
     <div id="global" class="scrollPrevent"></div>
+
+    <div id="progress"><div id="progress-content"></div></div>
 
     <div id="test">
       <br/>blah
