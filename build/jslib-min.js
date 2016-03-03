@@ -193,11 +193,11 @@ Input = function(){
   this.onKeyPress = function(evt){
     var code = Input.extractCharCode(evt);
     
-    console.log(code+" / "+INPUT.onPressCallback.length);
+    //console.log(code+" / "+INPUT.onPressCallback.length);
 
     if(code < INPUT.onPressCallback.length){
       if(INPUT.onPressCallback[code] != undefined){
-        console.log(code);
+        //console.log(code);
         INPUT.onPressCallback[code]();
       }  
     }
