@@ -67,13 +67,13 @@
         //console.log(Web.getUrlNoPage());
 
         Debug.setup();
-        test_Scroll();
+        //test_Scroll();
 
         //test_Resolution();
 
         //test_resize();
 
-        //test_input();
+        test_input();
 
         //test_web();
       });
@@ -84,9 +84,17 @@
       }
 
       function test_input(){
+        
+
+        Input.assignKey(40, function(){
+          alert("down");
+        });
+
         Input.assignKey(32, function(){
           alert("lol");
         });
+        
+        //Input.alertOnKey();
       }
 
       function test_resize(){
