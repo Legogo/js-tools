@@ -238,6 +238,10 @@ Input.click = function(elmt, callback){
 Input.unClick = function(elmt){
   elmt.unbind("click touchstart");
 }
+
+Input.setupAria = function(elmt, index){
+  elmt.attr("tabindex",index);
+}
 Loading = function(){
   this.idx = 0;
 }
@@ -443,12 +447,14 @@ Scroll = function(){
   this.touchDelta = {x:0,y:0};
 
   //permet de capter la vitesse de scroll
+  this.scrollIntervalTime = 100;
   this.scrollIntervalId = -1;
   this.scrollCount = 0;
 
   this.touchMobile = false;
-
   this.solvedDelta = 0;
+
+  this.mouseValues = [120,240,360,420,720,840,960,1080,1320,1680,1800,1920,2040,2280,2640,5520,7320];
 
   this.scrollIntervalUpate = function(handle){
     return function(e){
@@ -461,7 +467,7 @@ Scroll = function(){
     }
   }
 
-  this.scrollIntervalId = setInterval(this.scrollIntervalUpate(this), 50);
+  this.scrollIntervalId = setInterval(this.scrollIntervalUpate(this), this.scrollIntervalTime);
 }
 
 var SCROLL = new Scroll();
@@ -624,11 +630,18 @@ Scroll.onWheel = function(e){
 /* called both by mobile and desktop */
 Scroll.onScrollStep = function(delta){
   
+  var dlt = Math.abs(delta);
+
+  //souris PC
+  if(SCROLL.mouseValues.indexOf(dlt) > -1){
+    SCROLL.scrollCallback(delta);
+    return;
+  }
+  
   //on mac touchpad there is inertia in movement that gives a delta decreasing toward 0
   //under 10 it's almost done
   //a big movement is around [50,200]
-  if(Math.abs(delta) < 10) return;
-
+  
   SCROLL.scrollCount++;
   SCROLL.solvedDelta = delta;
   

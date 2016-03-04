@@ -66,3 +66,7 @@ Input.click = function(elmt, callback){
 Input.unClick = function(elmt){
   elmt.unbind("click touchstart");
 }
+
+Input.setupAria = function(elmt, index){
+  elmt.attr("tabindex",index);
+}
