@@ -7,6 +7,7 @@ Scroll = function(){
   this.touchDelta = {x:0,y:0};
 
   //permet de capter la vitesse de scroll
+  this.useScrollInterval = false;
   this.scrollIntervalTime = 100;
   this.scrollIntervalId = -1;
   this.scrollCount = 0;
@@ -192,6 +193,11 @@ Scroll.onScrollStep = function(delta){
   
   var dlt = Math.abs(delta);
 
+  if(!SCROLL.useScrollInterval){
+    SCROLL.scrollCallback(delta);
+    return;
+  }
+  
   //souris PC
   if(SCROLL.mouseValues.indexOf(dlt) > -1){
     SCROLL.scrollCallback(delta);

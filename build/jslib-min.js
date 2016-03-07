@@ -312,10 +312,7 @@ var MEDIA;
 
 function Media(){
   var snd = $("#sound");
-  
   var audio;
-  var srcOgg;
-  var srcMpg;
 
   this.setup = function(){
     this.addSoundPlayer();
@@ -328,9 +325,9 @@ function Media(){
       
       //ct += "<audio controls>";
       ct += "<audio>";
-      ct += '<source src="" type="audio/ogg">';
-      ct += '<source src="" type="audio/mpeg">';
-      ct += 'Your browser does not support the audio element.'
+      //ct += '<source src="" type="audio/ogg">';
+      //ct += '<source src="" type="audio/mpeg">';
+      //ct += 'Your browser does not support the audio element.'
       ct += '</audio>';
 
       ct += "</div>";
@@ -338,16 +335,11 @@ function Media(){
       $("body").append(ct)
 
       this.snd = $("#sound");
-
-      var srcs = this.snd.find("source");
-      //console.log(srcs);
-      this.srcOgg = $(srcs[0]);
-      this.srcMpg = $(srcs[1]);
-
-      this.audio = $(this.snd.find("audio")).get(0);
+      //this.audio = $(this.snd.find("audio")).get(0);
       //console.log(this.audio);
     }
 
+    this.audio = $("<audio>");
     //console.log(this.snd);console.log(this.srcOgg);console.log(this.srcMpg);
   }
 
@@ -357,9 +349,14 @@ function Media(){
 Media.playSound = function(url){
   if(MEDIA == null) MEDIA = new Media();
 
-  MEDIA.srcOgg.attr("src", url+".ogg");
-  MEDIA.srcOgg.attr("src", url+".mp3");
-  MEDIA.audio.play();
+  var audio = MEDIA.audio;
+
+  //console.log(audio);
+  audio.empty();
+  $("<source>").attr("src", url+".mp3").appendTo(audio);
+
+  audio[0].load();
+  audio[0].play();
 }
 Mobile = function(){}
 
@@ -500,6 +497,7 @@ Scroll = function(){
   this.touchDelta = {x:0,y:0};
 
   //permet de capter la vitesse de scroll
+  this.useScrollInterval = false;
   this.scrollIntervalTime = 100;
   this.scrollIntervalId = -1;
   this.scrollCount = 0;
@@ -685,6 +683,11 @@ Scroll.onScrollStep = function(delta){
   
   var dlt = Math.abs(delta);
 
+  if(!SCROLL.useScrollInterval){
+    SCROLL.scrollCallback(delta);
+    return;
+  }
+  
   //souris PC
   if(SCROLL.mouseValues.indexOf(dlt) > -1){
     SCROLL.scrollCallback(delta);
