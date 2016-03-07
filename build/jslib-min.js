@@ -308,6 +308,59 @@ MathTools.inverselerp = function(a,b,amount){ return (amount - a) / (b-a); }
 MathTools.isNumeric = function(){
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
+var MEDIA;
+
+function Media(){
+  var snd = $("#sound");
+  
+  var audio;
+  var srcOgg;
+  var srcMpg;
+
+  this.setup = function(){
+    this.addSoundPlayer();
+  }
+
+  this.addSoundPlayer = function(){
+    if(this.snd == null){
+
+      var ct = "<div id='sound'>";
+      
+      //ct += "<audio controls>";
+      ct += "<audio>";
+      ct += '<source src="" type="audio/ogg">';
+      ct += '<source src="" type="audio/mpeg">';
+      ct += 'Your browser does not support the audio element.'
+      ct += '</audio>';
+
+      ct += "</div>";
+
+      $("body").append(ct)
+
+      this.snd = $("#sound");
+
+      var srcs = this.snd.find("source");
+      //console.log(srcs);
+      this.srcOgg = $(srcs[0]);
+      this.srcMpg = $(srcs[1]);
+
+      this.audio = $(this.snd.find("audio")).get(0);
+      //console.log(this.audio);
+    }
+
+    //console.log(this.snd);console.log(this.srcOgg);console.log(this.srcMpg);
+  }
+
+  this.setup();
+}
+
+Media.playSound = function(url){
+  if(MEDIA == null) MEDIA = new Media();
+
+  MEDIA.srcOgg.attr("src", url+".ogg");
+  MEDIA.srcOgg.attr("src", url+".mp3");
+  MEDIA.audio.play();
+}
 Mobile = function(){}
 
 

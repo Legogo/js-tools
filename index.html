@@ -18,6 +18,7 @@
     <script type="text/javascript" src="js/System.js"></script>
     <script type="text/javascript" src="js/Web.js"></script>
     <script type="text/javascript" src="js/Input.js"></script>
+    <script type="text/javascript" src="js/Media.js"></script>
     <script type="text/javascript" src="js/Debug.js"></script>
 
     <style>
@@ -66,8 +67,10 @@
 
         //console.log(Web.getUrlNoPage());
 
-        Debug.setup();
-        test_Scroll();
+        test_media();
+
+        //Debug.setup();
+        //test_Scroll();
 
         //test_Resolution();
 
@@ -78,6 +81,17 @@
         //test_web();
       });
 
+      function test_media(){
+
+        Input.assignKey(32, function(){
+          Media.playSound("sound_A");
+        });
+        Input.assignKey(40, function(){
+          Media.playSound("sound_B");
+        });
+        
+      }
+      
       function test_web(){
         console.log(Web.getUrl());
         console.log(Web.getUrlParam());
