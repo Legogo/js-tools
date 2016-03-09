@@ -20,11 +20,13 @@ module.exports = function(grunt){
       }
     },
 
-    watch: {
-      js: {
-        files: 'js/**/*.js',
-        tasks: ['concat'],
-      }
+    //https://github.com/gruntjs/grunt-contrib-copy
+    copy: {
+      csi:{
+        files:[
+          { expand:true, flatten:true, src:["build/jslib-ugly-min.js"], dest:"C:/Users/lovehina/dev/darjeeling/citescience_3/src/js/lib/", filter:"isFile"}
+        ]
+      },
     },
 
   });
@@ -32,6 +34,10 @@ module.exports = function(grunt){
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
+  grunt.registerTask('csi', ['concat','uglify','copy:csi']);
   grunt.registerTask('work', ['concat','uglify']);
 }
+
+//npm install grunt-contrib-copy --save-dev

@@ -142,10 +142,10 @@ Scroll.bind_scroll = function(){
   var eventName = (/Firefox/i.test(navigator.userAgent))? "DOMMouseScroll" : "mousewheel" //FF doesn't recognize mousewheel as of FF3.x
   if (document.attachEvent) {
     //if IE (and Opera depending on user setting)
-    document.attachEvent("on"+eventName, Scroll.onWheel)
+    document.attachEvent("on"+eventName, Scroll.onWheel);
   }else if (document.addEventListener){
     //WC3 browsers
-    document.addEventListener(eventName, Scroll.onWheel, false)
+    document.addEventListener(eventName, Scroll.onWheel, false);
   }
 
   /*
@@ -174,17 +174,19 @@ Scroll.onMouseDown = function(e){
 
 /* called by wheel listener (not mobile) */
 Scroll.onWheel = function(e){
-    //console.log("onWheel");
+  
   var evt=window.event || e //equalize event object
+  var target = evt.target || evt.srcElement;
 
-  if(!Scroll.allowToScroll(evt.target)) return;
-  if(Scroll.preventScrollingEvent(evt.target)){
+  if(!Scroll.allowToScroll(target)) return;
+  if(Scroll.preventScrollingEvent(target)){
     Scroll.preventDefault(evt);
   }
-
-  var delta=evt.detail? evt.detail*(-120) : evt.wheelDelta //check for detail first so Opera uses that instead of wheelDelta
+  
+  //http://stackoverflow.com/questions/7600454/how-to-prevent-page-scrolling-when-scrolling-a-div-element
+  var delta = evt.detail ? evt.detail*(-120) : evt.wheelDelta //check for detail first so Opera uses that instead of wheelDelta
   //document.getElementById("wheelvalue").innerHTML=delta //delta returns +120 when wheel is scrolled up, -120 when down
-
+  
   Scroll.onScrollStep(delta);
 }
 

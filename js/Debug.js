@@ -54,21 +54,24 @@ function Debug(){
 }
 
 Debug.update = function(str){
+  if(DEBUG == null) DEBUG = new Debug();
   DEBUG.html(str);
 }
 
 Debug.append = function(str){
+  if(DEBUG == null) DEBUG = new Debug();
   //console.log("append "+str);
   DEBUG.appendContent(str);
 }
 
 Debug.log = function(str){
+  if(DEBUG == null) DEBUG = new Debug();
   //console.log(DEBUG);
   DEBUG.logs.push(str);
   DEBUG.updateLogs();
 }
 
-Debug.setup = function(){
+Debug.setup = function(toggleKeyCode){
   //console.log("{Debug} setup()");
   DEBUG = new Debug();
 
@@ -77,12 +80,22 @@ Debug.setup = function(){
   
   //console.log(DEBUG.div.is(":visible"));console.log(DEBUG.div);
 
-  Input.assignKey(32, function(){
-    DEBUG.div.toggle();
-  });
+  if(toggleKeyCode != undefined){
+    Input.assignKey(toggleKeyCode, function(){
+      DEBUG.div.toggle();
+    });  
+  }
+  
 }
 
 Debug.setVisibility = function(flag){
   if(flag) DEBUG.div.show();
   else DEBUG.div.hide();
+}
+
+Debug.hide = function(){
+  Debug.setVisibility(false);
+}
+Debug.show = function(){
+  Debug.setVisibility(true);
 }
